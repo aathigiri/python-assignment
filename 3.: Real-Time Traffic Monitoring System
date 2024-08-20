@@ -1,0 +1,50 @@
+import requests
+
+def get_traffic_data(start_point, destination):
+    api_key = "your_api_key_here"
+    base_url = "https://maps.googleapis.com/maps/api/directions/json"
+
+    params = {
+        'origin': start_point,
+        'destination': destination,
+        'departure_time': 'now',
+        'key': api_key,
+        'traffic_model': 'best_guess',
+        'alternatives': 'true'
+    }
+    
+    response = requests.get(base_url, params=params)
+    traffic_data = response.json()
+    
+    if traffic_data['status'] == 'OK':
+        return traffic_data
+    else:
+        return None
+
+def display_traffic_info(traffic_data):
+    if traffic_data:
+        routes = traffic_data['routes']
+        for i, route in enumerate(routes):
+            legs = route['legs'][0]
+            distance = legs['distance']['text']
+            duration = legs['duration_in_traffic']['text']
+            start_address = legs['start_address']
+            end_address = legs['end_address']
+            print(f"Route {i + 1}:")
+            print(f"  From: {start_address}")
+            print(f"  To: {end_address}")
+            print(f"  Distance: {distance}")
+            print(f"  Estimated Travel Time: {duration}")
+            print("\n")
+    else:
+        print("Error: Could not retrieve traffic data.")
+
+def main():
+    start_point = input("Enter the starting point (address or coordinates): ")
+    destination = input("Enter the destination (address or coordinates): ")
+    
+    traffic_data = get_traffic_data(start_point, destination)
+    display_traffic_info(traffic_data)
+
+if _name_ == "_main_":
+    main()
