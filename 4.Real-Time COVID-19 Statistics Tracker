@@ -1,0 +1,39 @@
+import requests
+import pandas as pd
+
+# Define the API endpoint for COVID-19 data
+url = "https://disease.sh/v3/covid-19/all"
+
+# Function to fetch global COVID-19 data
+def get_global_stats():
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        return pd.DataFrame([data])
+    else:
+        print("Failed to retrieve data")
+        return None
+
+# Define the API endpoint for country-specific COVID-19 data
+def get_country_stats(country):
+    country_url = f"https://disease.sh/v3/covid-19/countries/{country}"
+    response = requests.get(country_url)
+    if response.status_code == 200:
+        data = response.json()
+        return pd.DataFrame([data])
+    else:
+        print(f"Failed to retrieve data for {country}")
+        return None
+
+# Get global statistics
+global_stats = get_global_stats()
+if global_stats is not None:
+    print("Global COVID-19 Statistics:")
+    print(global_stats[['cases', 'deaths', 'recovered', 'active']])
+
+# Example: Get statistics for a specific country (e.g., "USA")
+country = "USA"
+country_stats = get_country_stats(country)
+if country_stats is not None:
+    print(f"\nCOVID-19 Statistics for {country}:")
+    print(country_stats[['country', 'cases', 'deaths', 'recovered', 'active']])
