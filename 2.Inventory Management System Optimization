@@ -1,0 +1,85 @@
+import pandas as pd
+
+class Product:
+    def _init_(self, product_id, name, lead_time, safety_stock):
+        self.product_id = product_id
+        self.name = name
+        self.lead_time = lead_time
+        self.safety_stock = safety_stock
+
+class Warehouse:
+    def _init_(self):
+        self.inventory = {}
+
+    def update_stock(self, product_id, quantity):
+        if product_id in self.inventory:
+            self.inventory[product_id] += quantity
+        else:
+            self.inventory[product_id] = quantity
+
+    def get_stock_level(self, product_id):
+        return self.inventory.get(product_id, 0)
+
+def calculate_reorder_point(product, historical_sales_data):
+    average_daily_demand = historical_sales_data[product.product_id].mean()
+    reorder_point = (average_daily_demand * product.lead_time) + product.safety_stock
+    return reorder_point
+
+def check_inventory_levels(warehouse, products, historical_sales_data):
+    reorder_recommendations = []
+    for product in products:
+        current_stock = warehouse.get_stock_level(product.product_id)
+        reorder_point = calculate_reorder_point(product, historical_sales_data)
+        if current_stock < reorder_point:
+            reorder_quantity = reorder_point - current_stock
+            reorder_recommendations.append((product.product_id, reorder_quantity))
+    return reorder_recommendations
+
+def generate_reports(warehouse, historical_sales_data):
+    inventory_turnover_report = {}
+    stockout_report = []
+    
+    for product_id in warehouse.inventory:
+        sales_data = historical_sales_data[product_id]
+        stock_level = warehouse.get_stock_level(product_id)
+        total_sales = sales_data.sum()
+        
+        inventory_turnover = total_sales / stock_level if stock_level > 0 else float('inf')
+        inventory_turnover_report[product_id] = inventory_turnover
+        
+        if stock_level == 0:
+            stockout_report.append(product_id)
+    
+    return inventory_turnover_report, stockout_report
+
+def main():
+    warehouse = Warehouse()
+    products = [
+        Product(1, "Product A", lead_time=5, safety_stock=10),
+        Product(2, "Product B", lead_time=3, safety_stock=15),
+    ]
+    
+    historical_sales_data = pd.DataFrame({
+        1: [20, 15, 30, 25, 10],
+        2: [10, 5, 15, 10, 20],
+    })
+    
+    warehouse.update_stock(1, 50)
+    warehouse.update_stock(2, 30)
+    
+    reorder_recommendations = check_inventory_levels(warehouse, products, historical_sales_data)
+    
+    for product_id, reorder_quantity in reorder_recommendations:
+        print(f"Reorder {reorder_quantity} units of Product ID: {product_id}")
+    
+    inventory_turnover_report, stockout_report = generate_reports(warehouse, historical_sales_data)
+    
+    print("Inventory Turnover Report:", inventory_turnover_report)
+    
+    if stockout_report:
+        print("Stockout Occurrences for Product IDs:", stockout_report)
+    else:
+        print("No Stockouts Occurred.")
+
+if _name_ == "_main_":
+    main()
