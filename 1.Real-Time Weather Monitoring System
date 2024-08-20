@@ -1,0 +1,41 @@
+import requests
+
+def get_weather_data(location):
+    api_key = "your_api_key_here"
+    base_url = "http://api.openweathermap.org/data/2.5/weather"
+    
+    params = {
+        'q': location,
+        'appid': api_key,
+        'units': 'metric'
+    }
+    
+    response = requests.get(base_url, params=params)
+    weather_data = response.json()
+    
+    if weather_data['cod'] == 200:
+        return weather_data
+    else:
+        return None
+
+def display_weather(weather_data):
+    if weather_data:
+        temp = weather_data['main']['temp']
+        weather_condition = weather_data['weather'][0]['description']
+        humidity = weather_data['main']['humidity']
+        wind_speed = weather_data['wind']['speed']
+        
+        print(f"Temperature: {temp}°C")
+        print(f"Weather Condition: {weather_condition}")
+        print(f"Humidity: {humidity}%")
+        print(f"Wind Speed: {wind_speed} m/s")
+    else:
+        print("Error: Could not retrieve weather data.")
+
+def main():
+    location = input("Enter the city name or coordinates (latitude,longitude): ")
+    weather_data = get_weather_data(location)
+    display_weather(weather_data)
+
+if _name_ == "_main_":
+    main()
